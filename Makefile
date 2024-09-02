@@ -31,10 +31,10 @@ test_mmanager: $(LIB_NAME)
 # Test target to run the linked list test program
 test_list: $(LIB_NAME) linked_list.o
 	$(CC) -o test_linked_list linked_list.c test_linked_list.c -L. -lmemory_manager
-	
+
 #run tests
 run_tests: run_test_mmanager run_test_list
-	
+
 # run test cases for the memory manager
 run_test_mmanager:
 	./test_memory_manager

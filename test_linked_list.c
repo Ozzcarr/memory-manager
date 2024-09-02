@@ -1,25 +1,22 @@
-#include "linked_list.h"
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "common_defs.h"
+#include "linked_list.h"
 
 // Helper to assert node values and report
-void assert_node_value(Node *node, uint16_t expected_value, const char *test_name)
-{
-    if (node == NULL || node->data != expected_value)
-    {
-        printf_red("FAIL [%s]: Expected %hu, got %hu\n", test_name, expected_value, node ? node->data : 0);
-    }
-    else
-    {
+void assert_node_value(Node *node, uint16_t expected_value,
+                       const char *test_name) {
+    if (node == NULL || node->data != expected_value) {
+        printf_red("FAIL [%s]: Expected %hu, got %hu\n", test_name,
+                   expected_value, node ? node->data : 0);
+    } else {
         printf_green("PASS [%s]: Expected %hu\n", test_name, expected_value);
     }
 }
 
 // Test inserting elements
-void test_insert()
-{
+void test_insert() {
     printf_yellow("Testing list_insert...\n");
     Node *head = NULL;
     list_init(&head);
@@ -32,18 +29,15 @@ void test_insert()
 }
 
 // Test inserting elements
-void test_insert_loop(int count)
-{
+void test_insert_loop(int count) {
     printf_yellow("Testing list_insert...\n");
     Node *head = NULL;
     list_init(&head);
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         list_insert(&head, i);
     }
     Node *current = head;
-    for (int i = count - 1; i >= 0; i--)
-    {
+    for (int i = count - 1; i >= 0; i--) {
         assert_node_value(current, i, "test_insert");
         current = current->next;
     }
@@ -52,8 +46,7 @@ void test_insert_loop(int count)
 }
 
 // Test inserting after
-void test_insert_after()
-{
+void test_insert_after() {
     printf_yellow("Testing list_insert_after...\n");
     Node *head = NULL;
     list_init(&head);
@@ -67,8 +60,7 @@ void test_insert_after()
 }
 
 // Test deletion
-void test_delete()
-{
+void test_delete() {
     printf_yellow("Testing list_delete...\n");
     Node *head = NULL;
     list_init(&head);
@@ -81,8 +73,7 @@ void test_delete()
 }
 
 // Test searching
-void test_search()
-{
+void test_search() {
     printf_yellow("Testing list_search...\n");
     Node *head = NULL;
     list_init(&head);
@@ -95,8 +86,7 @@ void test_search()
 }
 
 // Main function to run all tests
-int main()
-{
+int main() {
     test_insert();
     test_insert_loop(100);
     test_insert_after();
