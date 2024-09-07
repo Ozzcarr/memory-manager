@@ -105,10 +105,11 @@ void mem_free(void *block) {
  * resize fails.
  */
 void *mem_resize(void *block, size_t size) {
-    if (size <= 0) {
+    if (size == 0) {
         if (block) mem_free(block);
         return NULL;
     }
+
     if (!block) return mem_alloc(size);
 
     // Get start index to resize
