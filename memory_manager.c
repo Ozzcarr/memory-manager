@@ -1,9 +1,40 @@
 #include "memory_manager.h"
 
 void *memory;
-bool *occupied;
-bool *starts;
+unsigned char *occupied;
+unsigned char *starts;
 size_t mem_size;
+
+/**
+ * @brief Sets a bit in the bit array.
+ *
+ * @param array The bit array.
+ * @param index The index of the bit to set.
+ */
+void set_bit(unsigned char *array, size_t index) {
+    array[index / 8] |= (1 << (index % 8));
+}
+
+/**
+ * @brief Clears a bit in the bit array.
+ *
+ * @param array The bit array.
+ * @param index The index of the bit to clear.
+ */
+void clear_bit(unsigned char *array, size_t index) {
+    array[index / 8] &= ~(1 << (index % 8));
+}
+
+/**
+ * @brief Checks if a bit is set in the bit array.
+ *
+ * @param array The bit array.
+ * @param index The index of the bit to check.
+ * @return True if the bit is set, false otherwise.
+ */
+bool is_bit_set(const unsigned char *array, size_t index) {
+    return array[index / 8] & (1 << (index % 8));
+}
 
 /**
  * @brief Initializes the memory manager with the specified size.
@@ -12,8 +43,9 @@ size_t mem_size;
  */
 void mem_init(size_t size) {
     memory = malloc(size);
-    occupied = calloc(size, sizeof(bool));
-    starts = calloc(size, sizeof(bool));
+    size_t bit_array_size = (size + 7) / 8;
+    occupied = calloc(bit_array_size, 1);
+    starts = calloc(bit_array_size, 1);
     mem_size = size;
 }
 
@@ -32,13 +64,14 @@ void *mem_alloc(size_t size) {
     // Loop to find a place to allocate (first-fit)
     int consecutive_free = 0;
     for (size_t i = 0; i < mem_size; i++) {
-        consecutive_free = (occupied[i] == 0) ? consecutive_free + 1 : 0;
+        consecutive_free =
+            (!is_bit_set(occupied, i)) ? consecutive_free + 1 : 0;
         if (consecutive_free == size) {
             // Set memory as allocated
             for (size_t j = 0; j < size; j++) {
-                occupied[i - j] = 1;
+                set_bit(occupied, i - j);
             }
-            starts[i - size + 1] = 1;
+            set_bit(starts, i - size + 1);
 
             return memory + i - size + 1;
         }
@@ -58,13 +91,13 @@ void mem_free(void *block) {
     // Get start index to free
     size_t index = block - memory;
     if (index >= mem_size) return;
-    if (starts[index] == 0) return;
-    starts[index] = 0;
+    if (!is_bit_set(starts, index)) return;
+    clear_bit(starts, index);
 
     // Set memory as no longer occupied
     for (size_t i = index; i < mem_size; i++) {
-        if (starts[i] == 1 || occupied[i] == 0) break;
-        occupied[i] = 0;
+        if (is_bit_set(starts, i) || !is_bit_set(occupied, i)) break;
+        clear_bit(occupied, i);
     }
 }
 
@@ -89,10 +122,10 @@ void *mem_resize(void *block, size_t size) {
 
     // Get current size
     size_t current_size;
-    if (starts[index] == 1) {
+    if (is_bit_set(starts, index)) {
         current_size = 1;
         for (size_t i = index + 1; i < mem_size; i++) {
-            if (starts[i] == 1 || occupied[i] == 0) break;
+            if (is_bit_set(starts, i) || !is_bit_set(occupied, i)) break;
             current_size++;
         }
     } else {
@@ -105,14 +138,14 @@ void *mem_resize(void *block, size_t size) {
         // Check if there is space to expand
         size_t available = current_size;
         for (size_t i = index + current_size; i < mem_size; i++) {
-            if (starts[i] == 1 || occupied[i] == 1) break;
+            if (is_bit_set(starts, i) || is_bit_set(occupied, i)) break;
             available++;
         }
 
         if (available >= size) {
             // Expand
             for (size_t i = index + current_size; i < index + size; i++) {
-                occupied[i] = 1;
+                set_bit(occupied, i);
             }
 
             return block;
@@ -127,7 +160,7 @@ void *mem_resize(void *block, size_t size) {
     } else if (change < 0) {
         // Shrink
         for (size_t i = index + size; i < index + current_size; i++) {
-            occupied[i] = 0;
+            clear_bit(occupied, i);
         }
         return block;
     }
