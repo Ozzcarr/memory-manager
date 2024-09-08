@@ -120,29 +120,13 @@ void *mem_resize(void *block, size_t size) {
     // Get end index
     size_t endIndex = startIndex;
     while (!is_set(ends, endIndex)) endIndex++;
-
     size_t current_size = endIndex - startIndex + 1;
-    int change = size - current_size;
 
-    // Check if there is space to expand
-    if (change > 0) {
-        size_t stopIndex = endIndex;
-        while (stopIndex < mem_size && !is_set(starts, stopIndex)) stopIndex++;
-
-        // There is no space to expand, move memory block
-        if (stopIndex <= endIndex + change) {
-            void *newBlock = mem_alloc(size);
-            if (!newBlock) return NULL;
-            memcpy(newBlock, block, current_size);
-            mem_free(block);
-            return newBlock;
-        }
-    }
-
-    // Resize (expand or shrink)
-    clear_bit(ends, endIndex);
-    set_bit(ends, endIndex + change);
-    return block;
+    mem_free(block);
+    void *newBlock = mem_alloc(size);
+    if (!newBlock) return NULL;
+    if (newBlock != block) memcpy(newBlock, block, current_size);
+    return newBlock;
 }
 
 /**
