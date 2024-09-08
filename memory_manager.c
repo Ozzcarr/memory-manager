@@ -3,7 +3,7 @@
 void *memory;
 unsigned char *starts;
 unsigned char *ends;
-size_t mem_size;
+size_t memorySize;
 
 /**
  * @brief Sets a bit in the bit array.
@@ -43,10 +43,10 @@ bool is_set(const unsigned char *array, size_t index) {
  */
 void mem_init(size_t size) {
     memory = malloc(size);
-    size_t bit_array_size = (size + 7) / 8;
-    starts = calloc(bit_array_size, 1);
-    ends = calloc(bit_array_size, 1);
-    mem_size = size;
+    size_t bitArraySize = (size + 7) / 8;
+    starts = calloc(bitArraySize, 1);
+    ends = calloc(bitArraySize, 1);
+    memorySize = size;
 }
 
 /**
@@ -57,12 +57,12 @@ void mem_init(size_t size) {
  * allocation fails.
  */
 void *mem_alloc(size_t size) {
-    if (size == 0 || size > mem_size) return NULL;
+    if (!memory || size == 0 || size > memorySize) return NULL;
 
     // Loop to find a place to allocate (first-fit)
     int consecutive_free = 0;
     bool occupied = false;
-    for (size_t i = 0; i < mem_size; i++) {
+    for (size_t i = 0; i < memorySize; i++) {
         if (is_set(starts, i)) occupied = true;
         consecutive_free = (!occupied) ? consecutive_free + 1 : 0;
         if (consecutive_free == size) {
@@ -87,7 +87,7 @@ void mem_free(void *block) {
 
     // Get start index to free
     size_t index = block - memory;
-    if (index >= mem_size) return;
+    if (index >= memorySize) return;
     if (!is_set(starts, index)) return;
 
     // Set memory as no longer occupied
@@ -114,7 +114,7 @@ void *mem_resize(void *block, size_t size) {
 
     // Get start index to resize
     size_t startIndex = block - memory;
-    if (startIndex >= mem_size) return NULL;
+    if (startIndex >= memorySize) return NULL;
     if (!is_set(starts, startIndex)) return NULL;
 
     // Get end index
@@ -137,5 +137,5 @@ void mem_deinit() {
     free(memory);
     free(starts);
     free(ends);
-    mem_size = 0;
+    memorySize = 0;
 }
