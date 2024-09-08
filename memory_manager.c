@@ -83,7 +83,7 @@ void *mem_alloc(size_t size) {
  * @param block A pointer to the start of the memory block.
  */
 void mem_free(void *block) {
-    if (block == NULL) return;
+    if (!block) return;
 
     // Get start index to free
     size_t index = block - memory;
