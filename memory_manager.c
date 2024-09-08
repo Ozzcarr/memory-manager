@@ -120,12 +120,13 @@ void *mem_resize(void *block, size_t size) {
     // Get end index
     size_t endIndex = startIndex;
     while (!is_set(ends, endIndex)) endIndex++;
-    size_t current_size = endIndex - startIndex + 1;
+    size_t currentSize = endIndex - startIndex + 1;
 
     mem_free(block);
     void *newBlock = mem_alloc(size);
     if (!newBlock) return NULL;
-    if (newBlock != block) memcpy(newBlock, block, current_size);
+    size_t newSize = (size <=currentSize) ? size : currentSize;
+    if (newBlock != block) memcpy(newBlock, block, newSize);
     return newBlock;
 }
 
