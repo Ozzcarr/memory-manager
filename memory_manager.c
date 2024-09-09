@@ -124,7 +124,11 @@ void *mem_resize(void *block, size_t size) {
 
     mem_free(block);
     void *newBlock = mem_alloc(size);
-    if (!newBlock) return NULL;
+    if (!newBlock) {
+        set_bit(starts, startIndex);
+        set_bit(ends, endIndex);
+        return NULL;
+    }
     size_t newSize = (size <=currentSize) ? size : currentSize;
     if (newBlock != block) memcpy(newBlock, block, newSize);
     return newBlock;
