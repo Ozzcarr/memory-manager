@@ -129,7 +129,7 @@ void *mem_resize(void *block, size_t size) {
         set_bit(ends, endIndex);
         return NULL;
     }
-    size_t newSize = (size <=currentSize) ? size : currentSize;
+    size_t newSize = (size <= currentSize) ? size : currentSize;
     if (newBlock != block) memcpy(newBlock, block, newSize);
     return newBlock;
 }
