@@ -43,7 +43,8 @@ void list_insert_before(Node **head, Node *next_node, int data) {}
 void list_delete(Node **head, int data) {}
 
 /**
- * @brief Searches for a node with the specified data and returns a pointer to it.
+ * @brief Searches for a node with the specified data and returns a pointer to
+ * it.
  *
  * @param head A pointer to the head of the linked list.
  * @param data The data to insert into the linked list.
