@@ -57,7 +57,8 @@ void mem_init(size_t size) {
  * allocation fails.
  */
 void *mem_alloc(size_t size) {
-    if (!memory || size == 0 || size > memorySize) return NULL;
+    if (!memory || size > memorySize) return NULL;
+    if (size == 0) return memory;
 
     // Loop to find a place to allocate (first-fit)
     int consecutive_free = 0;
