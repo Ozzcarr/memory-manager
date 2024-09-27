@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "common_defs.h"
+#include "memory_manager.h"
+
 typedef struct Node {
     uint16_t data;
     struct Node *next;
