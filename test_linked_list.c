@@ -48,7 +48,7 @@ void capture_stdout(char *buffer, size_t size,
 // ********* Test basic linked list operations *********
 
 void test_list_init() {
-    printf_yellow(" Testing list_init ---> ");
+    printf_yellow("  Testing list_init ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node));
     my_assert(head == NULL);
@@ -57,7 +57,7 @@ void test_list_init() {
 }
 
 void test_list_insert() {
-    printf_yellow(" Testing list_insert ---> ");
+    printf_yellow("  Testing list_insert ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 2);
     list_insert(&head, 10);
@@ -69,7 +69,7 @@ void test_list_insert() {
 }
 
 void test_list_insert_after() {
-    printf_yellow(" Testing list_insert_after ---> ");
+    printf_yellow("  Testing list_insert_after ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 3);
     list_insert(&head, 10);
@@ -82,7 +82,7 @@ void test_list_insert_after() {
 }
 
 void test_list_insert_before() {
-    printf_yellow(" Testing list_insert_before ---> ");
+    printf_yellow("  Testing list_insert_before ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 3);
     list_insert(&head, 10);
@@ -96,7 +96,7 @@ void test_list_insert_before() {
 }
 
 void test_list_delete() {
-    printf_yellow(" Testing list_delete ---> ");
+    printf_yellow("  Testing list_delete ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 2);
     list_insert(&head, 10);
@@ -111,7 +111,7 @@ void test_list_delete() {
 }
 
 void test_list_search() {
-    printf_yellow(" Testing list_search ---> ");
+    printf_yellow("  Testing list_search ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 2);
     list_insert(&head, 10);
@@ -127,23 +127,23 @@ void test_list_search() {
 }
 
 void test_list_display() {
-    printf_yellow(" Testing list_display ... \n");
+    printf_yellow("  Testing list_display ... \n");
     Node *head = NULL;
 
-    int Nnodes = 3 + rand() % 10;
-    int entries = 5 + rand() % 5;
+    int Nnodes = 5 + rand() % 5;
+#ifdef DEBUG
+    printf_yellow("   Testing %d nodes.\n", Nnodes);
+#endif
 
     list_init(&head, sizeof(Node) * Nnodes);
 
-    printf_yellow("  Testing %d nodes, and %d entries.\n", Nnodes, entries);
-
-    int randomLow = rand() % entries;
+    int randomLow = rand() % Nnodes;
 
     //    randomLow=0;
 
-    int randomHigh = randomLow + rand() % (entries - randomLow);
+    int randomHigh = randomLow + rand() % (Nnodes - randomLow);
     while (randomHigh == 0) {
-        randomHigh = randomLow + rand() % (entries - randomLow);
+        randomHigh = randomLow + rand() % (Nnodes - randomLow);
     }
 
 #ifdef DEBUG
@@ -164,11 +164,11 @@ void test_list_display() {
     char LowValue[10];
     char HighValue[10];
 
-    int values[entries];
-    for (int i = 0; i < entries; i++) {
+    int values[Nnodes];
+    for (int i = 0; i < Nnodes; i++) {
         values[i] = 0;
     }
-    for (int k = 0; k < entries; k++) {
+    for (int k = 0; k < Nnodes; k++) {
         values[k] = 10 + rand() % 90;
         list_insert(&head, values[k]);
         if (k == randomLow && !Low) {
@@ -180,7 +180,7 @@ void test_list_display() {
             sprintf(HighValue, "%d", values[k]);
         }
         sprintf(stringFull + strlen(stringFull), "%d", values[k]);
-        if (k < (entries - 1)) {
+        if (k < (Nnodes - 1)) {
             sprintf(stringFull + strlen(stringFull), ", ");
         } else {
             sprintf(stringFull + strlen(stringFull), "]");
@@ -302,11 +302,11 @@ void test_list_display() {
     printf("\tK random node(s): %s\n", buffer);
 
     list_cleanup(&head);
-    printf_green("\n... [PASS].\n");
+    printf_green("  ... [PASS].\n");
 }
 
 void test_list_count_nodes() {
-    printf_yellow(" Testing list_count_nodes ---> ");
+    printf_yellow("  Testing list_count_nodes ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 3);
     list_insert(&head, 10);
@@ -321,7 +321,7 @@ void test_list_count_nodes() {
 }
 
 void test_list_cleanup() {
-    printf_yellow(" Testing list_cleanup ---> ");
+    printf_yellow("  Testing list_cleanup ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 3);
     list_insert(&head, 10);
@@ -336,7 +336,7 @@ void test_list_cleanup() {
 // ********* Stress and edge cases *********
 
 void test_list_insert_loop(int count) {
-    printf_yellow(" Testing list_insert loop ---> ");
+    printf_yellow("  Testing list_insert loop ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * count);
     for (int i = 0; i < count; i++) {
@@ -354,7 +354,7 @@ void test_list_insert_loop(int count) {
 }
 
 void test_list_insert_after_loop(int count) {
-    printf_yellow(" Testing list_insert_after loop ---> ");
+    printf_yellow("  Testing list_insert_after loop ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * (count + 1));
     list_insert(&head, 12345);
@@ -378,7 +378,7 @@ void test_list_insert_after_loop(int count) {
 }
 
 void test_list_delete_loop(int count) {
-    printf_yellow(" Testing list_delete loop ---> ");
+    printf_yellow("  Testing list_delete loop ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * count);
     for (int i = 0; i < count; i++) {
@@ -396,7 +396,7 @@ void test_list_delete_loop(int count) {
 }
 
 void test_list_search_loop(int count) {
-    printf_yellow(" Testing list_search loop ---> ");
+    printf_yellow("  Testing list_search loop ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * count);
     for (int i = 0; i < count; i++) {
@@ -413,7 +413,7 @@ void test_list_search_loop(int count) {
 }
 
 void test_list_edge_cases() {
-    printf_yellow(" Testing list edge cases ---> ");
+    printf_yellow("  Testing list edge cases ---> ");
     Node *head = NULL;
     list_init(&head, sizeof(Node) * 3);
 
