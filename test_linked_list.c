@@ -256,7 +256,6 @@ void test_list_display() {
 #ifdef DEBUG
         printf("We have a problem Huston.\n");
         printf("Fixed ,] issue.\n");
-        a
 #endif
     }
 
