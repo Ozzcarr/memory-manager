@@ -1,40 +1,8 @@
 #include "memory_manager.h"
 
 void *memory;
-unsigned char *starts;
-unsigned char *ends;
-size_t memorySize;
-
-/**
- * @brief Sets a bit in the bit array.
- *
- * @param array The bit array.
- * @param index The index of the bit to set.
- */
-void set_bit(unsigned char *array, size_t index) {
-    array[index / 8] |= (1 << (index % 8));
-}
-
-/**
- * @brief Clears a bit in the bit array.
- *
- * @param array The bit array.
- * @param index The index of the bit to clear.
- */
-void clear_bit(unsigned char *array, size_t index) {
-    array[index / 8] &= ~(1 << (index % 8));
-}
-
-/**
- * @brief Checks if a bit is set in the bit array.
- *
- * @param array The bit array.
- * @param index The index of the bit to check.
- * @return True if the bit is set, false otherwise.
- */
-bool is_set(const unsigned char *array, size_t index) {
-    return array[index / 8] & (1 << (index % 8));
-}
+MemoryBlock *memory_head;
+size_t memory_size;
 
 /**
  * @brief Initializes the memory manager with the specified size.
@@ -43,10 +11,8 @@ bool is_set(const unsigned char *array, size_t index) {
  */
 void mem_init(size_t size) {
     memory = malloc(size);
-    size_t bitArraySize = (size + 7) / 8;
-    starts = calloc(bitArraySize, 1);
-    ends = calloc(bitArraySize, 1);
-    memorySize = size;
+    memory_head = NULL;
+    memory_size = size;
 }
 
 /**
@@ -57,24 +23,44 @@ void mem_init(size_t size) {
  * allocation fails.
  */
 void *mem_alloc(size_t size) {
-    if (!memory || size > memorySize) return NULL;
+    if (!memory || size > memory_size) return NULL;
     if (size == 0) return memory;
 
-    // Loop to find a place to allocate (first-fit)
-    int consecutive_free = 0;
-    bool occupied = false;
-    for (size_t i = 0; i < memorySize; i++) {
-        if (is_set(starts, i)) occupied = true;
-        consecutive_free = (!occupied) ? consecutive_free + 1 : 0;
-        if (consecutive_free == size) {
-            // Set memory as allocated
-            set_bit(starts, i - size + 1);
-            set_bit(ends, i);
-            return memory + i - size + 1;
-        }
-        if (is_set(ends, i)) occupied = false;
+    MemoryBlock *new_block = malloc(sizeof(MemoryBlock));
+    if (!new_block) return NULL;
+
+    if (!memory_head) {
+        memory_head = new_block;
+        memory_head->start = memory;
+        memory_head->end = memory + size;
+        memory_head->next = NULL;
+        return memory;
     }
 
+    // If memory_head does not begin where the memory begins
+    if (memory_head->start - memory >= size) {
+        new_block->start = memory;
+        new_block->end = memory + size;
+        new_block->next = memory_head;
+        memory_head = new_block;
+        return memory;
+    }
+
+    MemoryBlock *current = memory_head;
+    while (current) {
+        size_t free_size = current->next ? current->next->start - current->end
+                                         : memory + memory_size - current->end;
+        if (free_size >= size) {
+            new_block->start = current->end;
+            new_block->end = current->end + size;
+            new_block->next = current->next;
+            current->next = new_block;
+            return new_block->start;
+        }
+        current = current->next;
+    }
+
+    free(new_block);
     return NULL;
 }
 
@@ -86,15 +72,23 @@ void *mem_alloc(size_t size) {
 void mem_free(void *block) {
     if (!block) return;
 
-    // Get start index to free
-    size_t index = block - memory;
-    if (index >= memorySize) return;
-    if (!is_set(starts, index)) return;
+    // Get memory block to free
+    MemoryBlock *previous = NULL;
+    MemoryBlock *current = memory_head;
+    while (current && current->start != block) {
+        previous = current;
+        current = current->next;
+    }
 
-    // Set memory as no longer occupied
-    clear_bit(starts, index);
-    while (!is_set(ends, index)) index++;
-    clear_bit(ends, index);
+    // Return if memory block was not found
+    if (!current) return;
+
+    if (previous)
+        previous->next = current->next;
+    else
+        memory_head = current->next;
+
+    free(current);
 }
 
 /**
@@ -113,26 +107,25 @@ void *mem_resize(void *block, size_t size) {
 
     if (!block) return mem_alloc(size);
 
-    // Get start index to resize
-    size_t startIndex = block - memory;
-    if (startIndex >= memorySize) return NULL;
-    if (!is_set(starts, startIndex)) return NULL;
+    // Get memory block to free
+    MemoryBlock *current = memory_head;
+    while (current && current->start != block) current = current->next;
+    if (!current) return NULL;
 
-    // Get end index
-    size_t endIndex = startIndex;
-    while (!is_set(ends, endIndex)) endIndex++;
-    size_t currentSize = endIndex - startIndex + 1;
+    size_t current_size = current->end - current->start;
 
+    // Free and try to allocate with new size
     mem_free(block);
-    void *newBlock = mem_alloc(size);
-    if (!newBlock) {
-        set_bit(starts, startIndex);
-        set_bit(ends, endIndex);
+    void *new_block = mem_alloc(size);
+    if (!new_block) {
+        mem_alloc(current_size);
         return NULL;
     }
-    size_t newSize = (size <= currentSize) ? size : currentSize;
-    if (newBlock != block) memcpy(newBlock, block, newSize);
-    return newBlock;
+
+    // If resize succeeded, move the memory
+    size_t new_size = (size <= current_size) ? size : current_size;
+    if (new_block != block) memcpy(new_block, block, new_size);
+    return new_block;
 }
 
 /**
@@ -141,7 +134,12 @@ void *mem_resize(void *block, size_t size) {
  */
 void mem_deinit() {
     free(memory);
-    free(starts);
-    free(ends);
-    memorySize = 0;
+
+    while (memory_head) {
+        MemoryBlock *temp = memory_head;
+        memory_head = memory_head->next;
+        free(temp);
+    }
+
+    memory_size = 0;
 }
